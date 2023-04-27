@@ -1,0 +1,55 @@
+name: Performance Audit
+
+on: [pull_request]
+
+jobs:
+
+  audit:
+
+    name: Performance Audit
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Create report directory
+
+        run: mkdir -p ${{ github.workspace }}/tmp/artifacts
+
+      - name: Get Vercel Preview URL
+
+        id: vercel-deployment
+
+        uses: ViktorJT/Get-Vercel-preview-url@main
+
+        with:
+
+          vercel_access_token: ${{ secrets.VERCEL_TOKEN }}
+
+          vercel_team_id: ${{ secrets.VERCEL_TEAM_ID }}
+
+          gh_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run Lighthouse audit on preview urls
+
+        uses: foo-software/lighthouse-check-action@master
+
+        with:
+
+          device: 'all'
+
+          gitHubAccessToken: ${{ secrets.GITHUB_TOKEN }}
+
+          outputDirectory: ${{ github.workspace }}/tmp/artifacts
+
+          urls: '${{ steps.vercel-deployment.outputs.preview_url }}'
+
+      - name: Upload reports
+
+        uses: actions/upload-artifact@master
+
+        with:
+
+          name: Lighthouse reports
+
+          path: ${{ github.workspace }}/tmp/artifacts...
